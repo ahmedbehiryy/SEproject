@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Internship Reports</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
+    }
+
+    .nav {
+      background-color: #2c3e50;
+      padding: 15px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .nav a:hover {
+      background-color: #34495e;
+    }
+
+    .nav-icons {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    /* Notification Styles */
+    .notification-badge {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .notification-icon {
+      color: white;
+      font-size: 18px;
+    }
+
+    .badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .notification-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      min-width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 8px;
+      margin-top: 10px;
+      z-index: 1000;
+    }
+
+    .notification-dropdown.show {
+      display: block;
+    }
+
+    .dropdown-header {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      font-weight: bold;
+      color: #2c3e50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dropdown-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      color: #2c3e50;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* Add styles for unread notifications */
+    .dropdown-item.unread {
+      background-color: #f8f9fa;
+      border-left: 3px solid #2c3e50;
+    }
+
+    .dropdown-item.unread:hover {
+      background-color: #f0f2f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 32px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .reports-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #2c3e50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #34495e;
+    }
+
+    .reports-list {
+      margin-top: 24px;
+    }
+
+    .report-card {
+      padding: 20px;
+      border: 1px solid #e1e1e1;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .report-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .report-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0;
+    }
+
+    .report-status {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pending { background-color: #ffeeba; color: #856404; }
+    .status-accepted { background-color: #d4edda; color: #155724; }
+    .status-rejected { background-color: #f8d7da; color: #721c24; }
+    .status-flagged { background-color: #fff3cd; color: #856404; }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 0.8rem;
+    }
+
+    .report-action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .report-action-btn:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .report-action-btn.edit { color: #3498db; }
+    .report-action-btn.delete { color: #e74c3c; }
+    .report-action-btn.download { color: #7f8c8d; }
+
+    .report-card:hover .report-action-btn {
+      color: var(--dark-color, #2c3e50);
+    }
+
+    .report-card:hover .report-action-btn.edit {
+      color: var(--primary-color, #3498db);
+    }
+
+    .report-card:hover .report-action-btn.delete {
+      color: var(--danger-color, #dc3545);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 32px;
+      border-radius: 12px;
+      width: 600px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #6c757d;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e1e1e1;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* Custom Alert Styles */
+    .custom-alert-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .custom-alert {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      z-index: 1001;
+      min-width: 300px;
+      display: none;
+    }
+
+    .custom-alert h3 {
+      margin: 0 0 15px 0;
+      color: #2c3e50;
+    }
+
+    .custom-alert p {
+      margin: 0 0 20px 0;
+      color: #666;
+    }
+
+    .alert-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .alert-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .alert-btn-cancel {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .alert-btn-cancel:hover {
+      background: #d0d0d0;
+    }
+
+    .alert-btn-delete {
+      background: #dc3545;
+      color: white;
+    }
+
+    .alert-btn-delete:hover {
+      background: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="nav-container">
+      <div class="nav-links">
+        <a href="Student_Dashboard.html">Dashboard</a>
+        <a href="student_Profile.html">Profile</a>
+        <a href="student_internships.html">Internships</a>
+        <a href="student_reports.html" class="active">Reports</a>
+      </div>
+      <div class="nav-icons">
+        <div class="notification-badge">
+          <i class="fas fa-bell notification-icon" id="notificationIcon"></i>
+          <span class="badge" id="notificationCount">0</span>
+          <div class="notification-dropdown" id="notificationDropdown">
+            <div class="dropdown-header">
+              Notifications
+              <button onclick="event.stopPropagation(); toggleNotifications()" class="close-btn" style="background:none; border:none; color:#666; cursor:pointer; font-size:18px;">&times;</button>
+            </div>
+            <div id="notificationList"></div>
+          </div>
+        </div>
+        <a href="index.html" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="reports-header">
+      <h1>My Internship Reports</h1>
+      <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Create New Report
+      </button>
+    </div>
+
+    <div class="reports-list" id="reportsList">
+      <!-- Reports will be dynamically added here -->
+    </div>
+  </div>
+
+  <!-- Create/Edit Report Modal -->
+  <div class="modal" id="reportModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Create New Report</h2>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="reportForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="reportTitle">Title</label>
+          <input type="text" id="reportTitle" required placeholder="Enter report title">
+        </div>
+        <div class="form-group">
+          <label for="reportIntro">Introduction</label>
+          <textarea id="reportIntro" required placeholder="Write a brief introduction about your internship..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="reportBody">Body</label>
+          <textarea id="reportBody" required placeholder="Describe your internship experience, tasks, and learnings in detail..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom Alert -->
+  <div class="custom-alert-overlay" id="alertOverlay"></div>
+  <div class="custom-alert" id="deleteAlert">
+    <h3>Delete Report</h3>
+    <p>Are you sure you want to delete this report? This action cannot be undone.</p>
+    <div class="alert-buttons">
+      <button class="alert-btn alert-btn-cancel" onclick="hideDeleteAlert()">Cancel</button>
+      <button class="alert-btn alert-btn-delete" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+
+  <script>
+    // Sample data structure for reports
+    let reports = JSON.parse(localStorage.getItem('internshipReports')) || [];
+
+    // Add before the existing script content
+    let internshipDateUnread = true;
+
+    function renderReports() {
+      const reportsList = document.getElementById('reportsList');
+      reportsList.innerHTML = '';
+
+      reports.forEach((report, index) => {
+        const reportCard = document.createElement('div');
+        reportCard.className = 'report-card';
+        reportCard.innerHTML = `
+          <div class="report-header">
+            <h3 class="report-title">${report.title}</h3>
+            <span class="report-status status-${report.status.toLowerCase()}">${report.status}</span>
+          </div>
+          <p>${report.introduction.substring(0, 150)}...</p>
+          <div class="report-actions">
+            <button class="report-action-btn edit" onclick="openEditModal(${index})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="report-action-btn delete" onclick="deleteReport(${index})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+            <button class="report-action-btn download" onclick="downloadReport(${index})">
+              <i class="fas fa-download"></i> Download PDF
+            </button>
+          </div>
+        `;
+        reportsList.appendChild(reportCard);
+      });
+    }
+
+    function openCreateModal() {
+      document.getElementById('modalTitle').textContent = 'Create New Report';
+      document.getElementById('reportForm').reset();
+      document.getElementById('reportModal').style.display = 'block';
+    }
+
+    function openEditModal(index) {
+      const report = reports[index];
+      document.getElementById('modalTitle').textContent = 'Edit Report';
+      document.getElementById('reportTitle').value = report.title;
+      document.getElementById('reportIntro').value = report.introduction;
+      document.getElementById('reportBody').value = report.body;
+      document.getElementById('reportForm').dataset.editIndex = index;
+      document.getElementById('reportModal').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('reportModal').style.display = 'none';
+      document.getElementById('reportForm').reset();
+      delete document.getElementById('reportForm').dataset.editIndex;
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      
+      const reportData = {
+        title: document.getElementById('reportTitle').value,
+        introduction: document.getElementById('reportIntro').value,
+        body: document.getElementById('reportBody').value,
+        status: 'Pending',
+        createdAt: new Date().toISOString()
+      };
+
+      const editIndex = document.getElementById('reportForm').dataset.editIndex;
+      
+      if (editIndex !== undefined) {
+        reports[editIndex] = { ...reports[editIndex], ...reportData };
+      } else {
+        reports.push(reportData);
+      }
+
+      localStorage.setItem('internshipReports', JSON.stringify(reports));
+      renderReports();
+      closeModal();
+    }
+
+    function showDeleteAlert(index) {
+      document.getElementById('alertOverlay').style.display = 'block';
+      document.getElementById('deleteAlert').style.display = 'block';
+      
+      // Set up the delete confirmation
+      document.getElementById('confirmDeleteBtn').onclick = function() {
+        reports.splice(index, 1);
+        localStorage.setItem('internshipReports', JSON.stringify(reports));
+        renderReports();
+        hideDeleteAlert();
+      };
+    }
+
+    function hideDeleteAlert() {
+      document.getElementById('alertOverlay').style.display = 'none';
+      document.getElementById('deleteAlert').style.display = 'none';
+    }
+
+    function deleteReport(index) {
+      showDeleteAlert(index);
+    }
+
+    // Close alert when clicking overlay
+    document.getElementById('alertOverlay').onclick = hideDeleteAlert;
+
+    // Initialize the reports list
+    renderReports();
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('reportModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    function viewReport(reportId) {
+      window.location.href = `view_report.html?id=${reportId}`;
+    }
+
+    function downloadReport(index) {
+      const report = reports[index];
+      const content = `
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+          <h1 style="color: #2c3e50; margin-bottom: 20px;">${report.title}</h1>
+          <div style="margin-bottom: 20px;">
+            <strong>Status:</strong> ${report.status}
+            <br>
+            <strong>Date:</strong> ${new Date(report.createdAt).toLocaleDateString()}
+          </div>
+          <div style="margin-bottom: 20px;">
+            <h2 style="color: #2c3e50;">Introduction</h2>
+            <p style="line-height: 1.6;">${report.introduction}</p>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <h2 style="color: #2c3e50;">Report Details</h2>
+            <p style="line-height: 1.6;">${report.body}</p>
+          </div>
+          <div style="margin-top: 30px; font-size: 12px; color: #666; text-align: right;">
+            Generated on: ${new Date().toLocaleString()}
+          </div>
+        </div>
+      `;
+
+      const element = document.createElement('div');
+      element.innerHTML = content;
+
+      const opt = {
+        margin: 1,
+        filename: `${report.title.replace(/\s+/g, '_')}_report.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    // Update the notifications implementation
+    const notifications = [
+      {
+        title: "Profile Update",
+        message: "Please complete your profile information",
+        time: "Just now",
+        unread: true
+      },
+      {
+        title: "New Internship Opportunity",
+        message: "A new internship position matches your preferences",
+        time: "2 hours ago",
+        unread: true
+      },
+      {
+        title: "Application Status",
+        message: "Your application has been reviewed",
+        time: "1 day ago",
+        unread: true
+      }
+    ];
+
+    // Initialize notification panel
+    function initializeNotifications() {
+      const notificationIcon = document.getElementById('notificationIcon');
+      const notificationCount = document.getElementById('notificationCount');
+      const dropdown = document.getElementById('notificationDropdown');
+      const notificationList = document.getElementById('notificationList');
+
+      // Update notification count - only count unread notifications
+      updateNotificationCount();
+
+      // Clear existing notifications
+      notificationList.innerHTML = '';
+
+      // Add notifications to the panel
+      notifications.forEach((notification, index) => {
+        const notificationItem = document.createElement('div');
+        notificationItem.className = 'dropdown-item' + (notification.unread ? ' unread' : '');
+        notificationItem.innerHTML = `
+          <div style="font-weight: bold;">${notification.title}</div>
+          <div>${notification.message}</div>
+          <div style="font-size: 12px; color: #666; margin-top: 4px;">${notification.time}</div>
+        `;
+        notificationList.appendChild(notificationItem);
+      });
+
+      // Add click handler to notification icon
+      notificationIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleNotifications();
+      });
+    }
+
+    function updateNotificationCount() {
+      const unreadCount = notifications.filter(n => n.unread).length;
+      const dateNotificationCount = internshipDateUnread && localStorage.getItem("internshipStartDate") ? 1 : 0;
+      const totalUnread = unreadCount + dateNotificationCount;
+      document.getElementById("notificationCount").textContent = totalUnread || '0';
+    }
+
+    function toggleNotifications() {
+      const dropdown = document.getElementById("notificationDropdown");
+      dropdown.classList.toggle("show");
+      
+      // Mark all notifications as read when opening the panel
+      if (dropdown.classList.contains('show')) {
+        notifications.forEach(notification => {
+          notification.unread = false;
+        });
+        
+        // Mark internship date notification as read
+        internshipDateUnread = false;
+        
+        // Update the notification count
+        updateNotificationCount();
+        
+        // Update the visual style of notifications
+        const items = document.querySelectorAll('.dropdown-item');
+        items.forEach(item => {
+          item.classList.remove('unread');
+        });
+      }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(event) {
+      const dropdown = document.getElementById("notificationDropdown");
+      const bell = document.querySelector(".notification-badge");
+      if (!bell.contains(event.target)) {
+        dropdown.classList.remove("show");
+      }
+    });
+
+    function loadInternshipDates() {
+      const list = document.getElementById("notificationList");
+      const start = localStorage.getItem("internshipStartDate");
+      const end = localStorage.getItem("internshipEndDate");
+      
+      if (start && end) {
+        const dateNotification = document.createElement("div");
+        dateNotification.className = 'dropdown-item' + (internshipDateUnread ? ' unread' : '');
+        dateNotification.innerHTML = `
+          <div style="font-weight: bold;">Internship Cycle</div>
+          <div>📅 ${start} → ${end}</div>
+        `;
+        list.insertBefore(dateNotification, list.firstChild);
+        updateNotificationCount();
+      }
+    }
+
+    // Initialize when page loads
+    window.addEventListener('load', function() {
+      initializeNotifications();
+      loadInternshipDates();
+    });
+  </script>
+</body>
+</html>
